@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace IconCacheRefresher
@@ -17,9 +18,13 @@ namespace IconCacheRefresher
             Console.WriteLine("You are run as admin.");
             Console.WriteLine("Killing file explorerer...");
 
-            foreach (var process in Process.GetProcessesByName("explorer"))
+            int attempts = 0;
+            while (Process.GetProcessesByName("explorer").Length > 0 && attempts < 5)
             {
-                process.Kill();
+                Console.WriteLine($"Attempt #{attempts}");
+                Process.Start("taskkill", "/F /IM explorer.exe");
+                Thread.Sleep(1000);
+                attempts++;
             }
 
             string AppDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -48,6 +53,8 @@ namespace IconCacheRefresher
                     return;
                 }
             }
+
+            Thread.Sleep(3000);
 
             Console.WriteLine("Restarting Explorer...");
             Process.Start("explorer.exe");
